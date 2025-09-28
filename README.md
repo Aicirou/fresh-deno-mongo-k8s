@@ -2,7 +2,7 @@
 
 A modern, production-ready dinosaur API built with Fresh framework, Deno runtime, MongoDB backend, and Kubernetes orchestration.
 
-[![Deploy](https://github.com/username/fresh-dino-k8s/workflows/Build%20and%20Deploy/badge.svg)](https://github.com/username/fresh-dino-k8s/actions)
+[![Deploy](https://github.com/Aicirou/fresh-deno-mongo-k8s/workflows/Build%20and%20Deploy/badge.svg)](https://github.com/Aicirou/fresh-deno-mongo-k8s/actions)
 
 ## 🚀 Quick Start
 
