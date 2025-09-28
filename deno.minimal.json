@@ -1,0 +1,21 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-net --allow-read --allow-env --watch main.minimal.ts",
+    "start": "deno run --allow-net --allow-read --allow-env main.minimal.ts",
+    "docker:build": "docker build -f Dockerfile.minimal -t dinosaur-api:minimal .",
+    "docker:run": "docker run -p 8000:8000 dinosaur-api:minimal"
+  },
+  "lint": {
+    "rules": {
+      "tags": ["recommended"]
+    }
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 80,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve"
+  }
+}

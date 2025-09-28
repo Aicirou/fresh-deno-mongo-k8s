@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dinosaur-api
+  labels:
+    app: dinosaur-api
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: dinosaur-api
+  template:
+    metadata:
+      labels:
+        app: dinosaur-api
+        version: v1
+    spec:
+      serviceAccountName: dinosaur-api-sa
+      containers:
+      - name: dinosaur-api
+        image: fresh-dinosaur-api:final
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8000"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: LOG_LEVEL
+          value: "info"
+        - name: MONGODB_URI
+          value: "mongodb://admin:password@mongodb-service:27017/dinosaurdb?authSource=admin"
+        - name: ENABLE_CLUSTER_MONITORING
+          value: "true"
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2
+          successThreshold: 1
+          failureThreshold: 2
+        volumeMounts:
+        - name: dinosaur-data
+          mountPath: /app/data.json
+          subPath: data.json
+          readOnly: true
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1001
+          runAsGroup: 1001
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: dinosaur-data
+        configMap:
+          name: dinosaur-data
+      securityContext:
+        fsGroup: 1001
+      restartPolicy: Always

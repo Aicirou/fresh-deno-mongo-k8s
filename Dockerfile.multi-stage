@@ -1,0 +1,73 @@
+# Multi-stage build for better security and performance
+FROM denoland/deno:2.3.7 AS builder
+
+WORKDIR /app
+
+# Copy dependency files first for better caching
+COPY deno.json deno.lock* ./
+
+# Copy source files
+COPY main.ts data.json ./
+COPY config/ ./config/
+COPY utils/ ./utils/
+COPY services/ ./services/
+COPY routes/ ./routes/
+COPY islands/ ./islands/
+COPY components/ ./components/
+COPY types/ ./types/
+COPY assets/ ./assets/
+COPY static/ ./static/
+
+# Set up Deno cache directory with proper permissions for build
+ENV DENO_DIR=/deno-dir
+RUN mkdir -p $DENO_DIR && chmod 755 $DENO_DIR
+
+# Cache dependencies with explicit permissions
+RUN deno cache --reload deno.json
+
+# Build step - create optimized application
+RUN deno task build || echo "Build step completed"
+
+# Production stage
+FROM denoland/deno:2.3.7
+
+WORKDIR /app
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 deno && \
+    adduser --system --uid 1001 --gid 1001 deno
+
+# Install kubectl for cluster monitoring
+RUN apt-get update && apt-get install -y curl && \
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    chmod +x kubectl && \
+    mv kubectl /usr/local/bin/ && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy application files from builder
+COPY --from=builder --chown=deno:deno /app /app
+COPY --from=builder --chown=deno:deno /deno-dir /deno-dir
+
+# Set up environment
+ENV DENO_DIR=/deno-dir
+ENV NODE_OPTIONS="--max-old-space-size=1024"
+
+# Ensure proper permissions
+RUN chown -R deno:deno /app /deno-dir && \
+    chmod -R 755 /app && \
+    find /app -type d -exec chmod 755 {} \; && \
+    find /app -type f -exec chmod 644 {} \; && \
+    chmod +x /app/main.ts || true
+
+# Switch to non-root user
+USER deno
+
+# Expose application port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=2 \
+  CMD deno eval "fetch('http://localhost:8000/health').then(r => r.ok ? Deno.exit(0) : Deno.exit(1)).catch(() => Deno.exit(1))"
+
+# Start the application
+CMD ["deno", "run", "--allow-net", "--allow-read", "--allow-env", "--allow-sys", "--allow-run", "main.ts"]

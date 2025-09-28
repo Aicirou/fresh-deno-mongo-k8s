@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dinosaur-api-service
+  labels:
+    app: dinosaur-api
+spec:
+  selector:
+    app: dinosaur-api
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP

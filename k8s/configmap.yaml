@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dinosaur-data
+  labels:
+    app: dinosaur-api
+data:
+  # Note: In production, consider using a database instead of ConfigMap for large datasets
+  # This is kept simple for demo purposes
+  data.json: |
+    [
+      {
+        "name": "Triceratops",
+        "description": "A large herbivorous ceratopsid dinosaur that lived during the late Maastrichtian stage."
+      },
+      {
+        "name": "Tyrannosaurus",
+        "description": "One of the largest land predators ever known, T. Rex lived in North America."
+      },
+      {
+        "name": "Stegosaurus",
+        "description": "A herbivorous thyreophoran dinosaur with distinctive kite-shaped plates."
+      },
+      {
+        "name": "Velociraptor",
+        "description": "A small dromaeosaurid dinosaur that lived in Asia during the Late Cretaceous."
+      },
+      {
+        "name": "Brachiosaurus",
+        "description": "This dinosaur was a giant, gentle, long-necked plant-eater."
+      }
+    ]

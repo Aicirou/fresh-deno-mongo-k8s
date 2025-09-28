@@ -1,0 +1,23 @@
+# Minimal Deno Docker setup
+FROM denoland/deno:2.3.7
+
+WORKDIR /app
+
+# Copy app files
+COPY . .
+
+# Cache dependencies
+RUN deno cache main.minimal.ts
+
+# Run as non-root user
+USER deno
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=2 \
+  CMD deno eval "fetch('http://localhost:8000/health').then(r => r.ok ? Deno.exit(0) : Deno.exit(1)).catch(() => Deno.exit(1))"
+
+# Start app
+CMD ["deno", "run", "--allow-net", "--allow-read", "--allow-env", "main.minimal.ts"]

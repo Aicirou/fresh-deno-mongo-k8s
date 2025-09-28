@@ -1,0 +1,30 @@
+# Optional: Ingress for external access
+# Requires an ingress controller (nginx, traefik, etc.)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dinosaur-api-ingress
+  labels:
+    app: dinosaur-api
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # nginx.ingress.kubernetes.io/rate-limit: "100"
+    # nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  ingressClassName: nginx  # Change based on your ingress controller
+  rules:
+  - host: dinosaur-api.local  # Change to your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dinosaur-api-service
+            port:
+              number: 80
+  # tls:
+  # - hosts:
+  #   - dinosaur-api.local
+  #   secretName: dinosaur-api-tls
